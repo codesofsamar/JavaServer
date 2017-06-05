@@ -49,48 +49,57 @@ public class TCPServer extends Thread {
  
         running = true;
  
-        try {
-            System.out.println("S: Connecting...");
- 
-            //create a server socket. A server socket waits for requests to come in over the network.
-            ServerSocket serverSocket = new ServerSocket(SERVERPORT);
- 
-            //create client socket... the method accept() listens for a connection to be made to this socket and accepts it.
-            Socket client = serverSocket.accept();
-            System.out.println("S: Receiving...");
- 
+        while(true) {
             try {
- 
-                //sends the message to the client
-                mOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(client.getOutputStream())), true);
- 
-                //read the message received from client
-                BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
- 
-                //in this while we wait to receive messages from client (it's an infinite loop)
-                //this while it's like a listener for messages
-                while (running) {
-                    String message = in.readLine();
-                    System.out.println(message + "here\n");
-                    System.out.println("xxx");
- 
-                    if (message != null && messageListener != null) {
-                        //call the method messageReceived from ServerBoard class
-                        messageListener.messageReceived(message);
+                System.out.println("S: Connecting...");
+     
+                //create a server socket. A server socket waits for requests to come in over the network.
+                ServerSocket serverSocket = new ServerSocket(SERVERPORT);
+     
+                //create client socket... the method accept() listens for a connection to be made to this socket and accepts it.
+                Socket client = serverSocket.accept();
+                System.out.println("S: Receiving...");
+     
+                try {
+     
+                    //in this while we wait to receive messages from client (it's an infinite loop)
+                    //this while it's like a listener for messages
+                    while (running) {
+                    	System.out.println(client.isConnected());
+                    	//sends the message to the client
+                    	mOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(client.getOutputStream())), true);
+                    	//read the message received from client
+                    	BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                        String message = in.readLine();
+                        System.out.println(message + "here\n");
+                        System.out.println("ABC");
+                        
+                        if(message.contains("SHUT_DOWN_COMMAND")) {
+                        	//running = false;
+                        	client.close();
+                        	break;
+                        	//client.close();
+                        	
+                        }
+     
+                        if (message != null && messageListener != null) {
+                            //call the method messageReceived from ServerBoard class
+                            messageListener.messageReceived(message);
+                        }
                     }
-                }
- 
+     
+                } catch (Exception e) {
+                    System.out.println("S: Error");
+                    e.printStackTrace();
+                } /*finally {
+                    //client.close();
+                    System.out.println("S: Done.");
+                }*/
+     
             } catch (Exception e) {
                 System.out.println("S: Error");
                 e.printStackTrace();
-            } finally {
-                client.close();
-                System.out.println("S: Done.");
             }
- 
-        } catch (Exception e) {
-            System.out.println("S: Error");
-            e.printStackTrace();
         }
  
     }
